@@ -1,0 +1,65 @@
+---
+title: "projecct2c"
+output: html_document
+---
+
+
+```{r}
+library(seqinr)
+library(Biostrings)
+dnaDugong <- readDNAStringSet("dugongComplete.fa")
+dnaAfrica <- readDNAStringSet("elephant.fa")
+dnaWhale <- readDNAStringSet("whale.fa")
+dnaMantanee <- readDNAStringSet("manetee.fa")
+dnaDolphin <- readDNAStringSet("dolphin.fa")
+dnaHyrox <- readDNAStringSet("hyrax.fa")
+all_sequences <- c(dnaDugong,dnaAfrica,dnaWhale,dnaMantanee,dnaDolphin,dnaHyrox)
+all_sequences
+```
+
+```{r}
+writeXStringSet(all_sequences, 'final.fasta')
+```
+
+
+```{r}
+AA_read <- read.fasta(file = "final.fasta")
+AA_read
+```
+
+```{r}
+mySequences <- readDNAStringSet("final.fasta")
+mySequences
+library(msa)
+seq_MSA <- msa(mySequences,type = "dna")
+seq_MSA
+```
+
+```{r}
+library(ape)
+myAln3 <- msaConvert(seq_MSA, type="seqinr::alignment")
+myAln3
+d <- dist.alignment(myAln3, "identity")
+as.matrix(d)
+myTree <- nj(d)
+plot(myTree, main="Phylogenetic Tree of Human Rel Homology Domain Sequences")
+```
+
+```{r}
+readDNAStringSet("final.fasta",format="fasta",nrec=-1L,skip=0L, seek.first.rec= FALSE,use.names = TRUE, with.qualities=FALSE)
+temp <- toString(readDNAStringSet("final.fasta",format="fasta",nrec=-1L,skip=0L,seek.first.rec=FALSE,use.names=TRUE,with.qualities = FALSE))
+print(temp)
+```
+
+```{r}
+res <- lapply(temp, function(x){
+  # collapse seq into string
+  seqCollapse <- paste(toupper(as.character(x)), collapse = "")
+  # run blast
+  print(seqCollapse)
+  blastSequences(seqCollapse)
+})
+```
+
+
+
