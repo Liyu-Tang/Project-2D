@@ -1,0 +1,113 @@
+---
+title: "projecct2c"
+output: html_document
+---
+
+Introduction (40 points)
+
+- 10 points for specific, measurable, and clear scientific question
+Dugong is the only herbivours mammal that become completely aquatic. There fossil could traced them back to 50 millions years. Dugong had become endangered species because of global warming and human hunting for their meats and oils. Dugong is known as mostly related to stellar sea cow that had been extinct but I am curious about which species are dugong closely related to nowadays due to dugong looks similar to manatees except the tail but it has a tail shape like whale and dolphin, but since it is known as evolved from elephants hence I want to find out which species are most related to dugong. 
+
+- 10 points for background on the protein/gene/species of interest and where the data is sourced from
+I used the mitochondria genomes because mitochondria evolved from bacteria and it is the first Eukaryota cell, hence it has the longest history for evolution thus it is helpful to compare their genomes to check their similarities. All the data are obtain from GenBank. 
+
+- 10 points for clear, specific, and measurable scientific hypothesis that is in the form of an if-then statement
+If dugong is most related to elephant, then the phygenetic tree will shows that they are closely related under same taxa. 
+
+- 10 points for description of what analyses were done and how the data was downloaded for the project
+Due to we are comparing the similarities of different genomes, we will use multiple sequence alignment to check all the similarities in order to generate a matrix to construct a phylogenetic tree. The data are download as fasta files from GenBank in DNA forms and put into local variables. Then all local variables will become a global variable to perform msa.
+
+Below, this bit of code is responsible for loading in all of the necessary packages. Here is where I will define the packages and what they are loaded in for {25 points for adequately describing the packages}:
+
+1) seqinr:
+2) Biostrings:
+3) msa:
+4) ape:
+
+```{r}
+library(seqinr)
+library(Biostrings)
+library(msa)
+library(ape)
+```
+
+I download different files from GenBank including Dugong, African elephant, seacow that had extinct, manatee, dolphin and hyrax. Then I used readDNAStringSet to read the DNA genome into different global variables. 
+```{r}
+#All of these are global variables 
+dnaDugong <- readDNAStringSet("dugongComplete.fa")
+dnaAfrica <- readDNAStringSet("elephant.fa")
+dnaSeacow <- readDNAStringSet("seacow.fa") 
+dnaMantanee <- readDNAStringSet("manetee.fa")
+dnaDolphin <- readDNAStringSet("dolphin.fa")
+dnaHyrox <- readDNAStringSet("hyrax.fa")
+all_sequences <- c(dnaDugong,dnaAfrica,dnaSeacow,dnaMantanee,dnaDolphin,dnaHyrox)
+all_sequences
+```
+
+Then I put all the sequences into one fasta file for multiple sequence alignment. This creates a final.fasta file that contains all DNA genomic sequences in one .fasta format. 
+```{r}
+writeXStringSet(all_sequences, 'final.fasta')
+```
+
+
+```{r}
+#mySequences variable contains all genomes sequences. 
+mySequences <- readDNAStringSet("final.fasta")
+mySequences
+
+#Then perform multiple sequence alignment using msa package that previously had been installed. 
+seq_MSA <- msa(mySequences,type = "dna")
+seq_MSA
+```
+
+```{r}
+#msaConvert helps to convert msa object into an object of alignment class for phylogenetic tree used as how type is specified
+myAln3 <- msaConvert(seq_MSA, type="seqinr::alignment")
+myAln3
+#d <- dist.alignment(myAln3, "identity")
+#as.matrix(d)
+#myTree <- nj(d)
+#plot(myTree,no.margin=TRUE,edge.width=2)
+#plot(myTree, main="Phylogenetic Tree of Species that are closely related to Dugong")
+```
+
+
+```{r}
+#Sub function replace all characters. 
+myAln3$nam <- sub("gb", '', myAln3$nam)
+myAln3$nam <- sub("ref", '', myAln3$nam)
+myAln3$nam <- sub("PREDICTED", '', myAln3$nam)
+myAln3$nam <- sub("complete genome", '', myAln3$nam)
+myAln3$nam <- sub("mitochondrion,", '', myAln3$nam)
+myAln3$nam <- sub("UNVERIFIED", '', myAln3$nam)
+myAln3$nam <- sub("voucher CRI008296", '', myAln3$nam)
+myAln3$nam <- sub("mitochondrion sequence", '', myAln3$nam)
+myAln3$nam <- sub("mRNA", '', myAln3$nam)
+myAln3$nam <- sub("transcript variant X6, ", '', myAln3$nam)
+myAln3$nam <- sub(",", '', myAln3$nam)
+myAln3
+#This creates a matrix of pairwise distances from alignes sequences using similiar. nj is neighbor-joing tree estimation that creates a  
+tr <- nj(dist.alignment(myAln3, "identity"))
+plot(tr, main="Phylogenetic Tree of Dugong closely related species")
+
+```
+The other method we used Blast Search to check the similarities of the genomes with other species. I upload the final.
+```{r} 
+
+DugongBlast <- read.csv("UUN6SDM5013-Dugong-Descriptions.csv")
+ElephantBlast <- read.csv("UUN6SDM5013-Elephant-Descriptions.csv")
+
+```
+
+```{r}
+DugongBlast
+ElephantBlast
+```
+
+
+
+
+`
+
+
+
