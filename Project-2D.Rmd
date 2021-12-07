@@ -1,0 +1,144 @@
+---
+title: "projecct2c"
+output: html_document
+---
+
+Introduction (40 points)
+
+Scientific question:
+Dugong is the only herbivours mammal that become completely aquatic. Their fossil could traced them back to 50 millions years. Dugong had become endangered species because of global warming and human hunting for their meats and oils. Dugong is most closely related to stellar sea cow that are extinct hence I am curious which species are dugong closely related to nowadays due to dugong looks similar to manatees except the shape of the tail, but it also has a tail shape like dolphin, and it is also evolved from elephants. As measured by the mitochondrial genome, are dugongs more closely related to other marine mammals such as dolphins or Beluga whale, or their evolutionary ancestor elephants, or a outgroup such as hyrax? Manatees is used as a control group because it is known as the most closely related species to dugong nowadays. 
+
+Background on the protein/gene/species of interest and where the data is sourced from:
+I choose to use the mitochondria genomes because mitochondria has the longest history due to it evolved from bacteria. Mitochondria evolves rapidly with low rate of recombination hence it provides an abundance of genotypic character throughout the evolution thus it is helpful to compare their genomes to determine their ancestry by comparing the similarities. The species of interest are dugong, dolphin, African elephant, hyrax, stellar sea cow, Beluga whale and manatees, I download all of their mitochondrion complete genome from GenBank in fasta files. 
+
+Scientific hypothesis that is in the form of an if-then statement:
+If dugong is more closely related to elephant, then they have more similar mitochondrial genes compare to aquatic mammals like dolphin and Beluga whales and mammal like hyrax. 
+
+Description of what analyses were done and how the data was downloaded for the project:
+Due to we are comparing the similarities of different genomes, we will use multiple sequence alignment to check all the similarities in order to generate a matrix to construct a phylogenetic tree. A phylogenetic tree is a branching diagram or a tree showing the evolutionary relationships among various biological species or other entities based upon similarities and differences in their physical or genetic characteristics. If two species have higher similarities than others, then phylogenetic tree will put them under same taxa or branch. All the data are download as fasta files from GenBank in DNA forms and I will combine them into one fasta file to perform msa and blast search.
+
+Below, this bit of code is responsible for loading in all of the necessary packages. Here is where I will define the packages and what they are loaded in for :
+
+1) seqinr: It retrieves and analyses biological sequences.
+2) Biostrings: Contains classes and functions for representing biological string such as DNA, RNA and amino caids. It manipulates the biological sequences into the forms that we want. 
+3) msa: It provides an interface to perform Multiple Sequence Alignment by aligning either protein, RNA or DNA sequences to group similar sequences. 
+4) ape: It generates a phylogenetic tree by constructing a matrix for the gene similarities. It reads, writes, manipulates, analyze and simulate phylogenetic tree and DNA sequences. 
+
+```{r}
+#Load all needed packages
+library(seqinr)
+library(Biostrings)
+library(msa)
+library(ape)
+```
+
+```{r}
+#I download different files from GenBank including Dugong, African elephant, stellar sea cow that had extinct, manatees, dolphin, whale and hyrax. Then I used readDNAStringSet from Biostring package to read the DNA sequences from separate fasta files into different variables. The variable names are indicated as the type of biological species and they are all global variables that can be accessed throughout the script. 
+dnaDugong <- readDNAStringSet("dugongComplete.fa")
+dnaAfrica <- readDNAStringSet("elephant.fa")
+dnaSeacow <- readDNAStringSet("seacow.fa") 
+dnaMantanee <- readDNAStringSet("manetee.fa")
+dnaDolphin <- readDNAStringSet("dolphin.fa")
+dnaHyrox <- readDNAStringSet("hyrax.fa")
+dnaWhale <- readDNAStringSet("whale.fa")
+#Then I combine all different DNA sequences into one global variable as a list for later access. 
+all_sequences <- c(dnaDugong,dnaAfrica,dnaSeacow,dnaMantanee,dnaDolphin,dnaHyrox,dnaWhale)
+all_sequences
+```
+
+```{r}
+typeof(all_sequences) #checking the type of class of all_sequences 
+```
+ 
+```{r}
+#all_sequences variable is an input for writeXStringSet function to write all DNA genomes into one fasta file as output. Multiple sequence alignment and blast search only require one fasta file that contains all needed DNA genomes for alignment.  
+writeXStringSet(all_sequences, 'final.fasta')
+
+```
+
+
+```{r}
+#mySequences variable is a global variable that stores all DNA sequences for multiple sequence alignment used. 
+#We read DNA sequences from final.fasta again to check if it is the same as all_sequences to see if the format is correct. 
+mySequences <- readDNAStringSet("final.fasta")
+mySequences
+```
+```{r}
+typeof(mySequences) #check the type of class
+```
+
+
+```{r}
+#Then we perform multiple sequence alignment using msa package that previously had been installed. mySequences is the input and type need to specify whether is AA (protein), DNA or RNA. The output for msa is the alignment of 7 different species. seq_MSA is a global variable that store the alignment that can be used later thus we do not need to repeatedly keep running msa. 
+seq_MSA <- msa(mySequences,type = "dna")
+class(seq_MSA)
+seq_MSA
+```
+
+
+```{r}
+#Then we need to convert msa object into an object of alignment class for phylogenetic tree used. Type is specified for the kind of class that we want to convert.The output is a class of alignment with aligned sequences. 
+myAln3 <- msaConvert(seq_MSA, type="seqinr::alignment")
+myAln3 #This alignment can already be used to generate phylogenetic tree using plot function but I want to make it easier to visualize. 
+```
+
+
+```{r}
+#Since all of the labels are too long, hence I used sub function to shorten the labels with empty space to make it easier to visualize. The final figure only contains the accession number and the species names. 
+myAln3$nam <- sub("gb", '', myAln3$nam)
+myAln3$nam <- sub("ref", '', myAln3$nam)
+myAln3$nam <- sub("PREDICTED", '', myAln3$nam)
+myAln3$nam <- sub("complete genome", '', myAln3$nam)
+myAln3$nam <- sub("mitochondrion,", '', myAln3$nam)
+myAln3$nam <- sub("UNVERIFIED", '', myAln3$nam)
+myAln3$nam <- sub("voucher CRI008296", '', myAln3$nam)
+myAln3$nam <- sub("mitochondrion sequence", '', myAln3$nam)
+myAln3$nam <- sub("mRNA", '', myAln3$nam)
+myAln3$nam <- sub("transcript variant X6, ", '', myAln3$nam)
+myAln3$nam <- sub(",", '', myAln3$nam)
+myAln3$nam <- sub("voucher NIBRMM0000113608", '', myAln3$nam)
+
+myAln3
+
+#dist.alignment function creates a matrix of pairwise distances from aligned sequences by specifying the distance between each pair of taxa. nj is separate function for neighbor-joing tree estimation that takes an input from dist.alignment to create an output list for a phylogenetic tree by linking all the nodes. 
+tr <- nj(dist.alignment(myAln3, "identity"))
+
+#we use plot function to create phylogenetic tree 
+plot(tr, main="Phylogenetic Tree of Dugong closely related species")
+```
+
+
+The other bioinformatic method is Blast Search by checking the similarities of the genomes with other species on NCBI interface. I upload the final.fasta to NCBI webpage and run the nucleotide blast with the nucleotide collection databases (nr/nt) to compare all nucleotide sequences on NCBI. Then I download separate csv files from NCBI blast search to see their DNA similarities and descriptionsfor the top 100 species.
+```{r} 
+#After downloading description files, we read in into different variables. All of my variables are global which could be accessed anywhere in this script because all of my codes use function directly from the packages thus I did not need to use any local variables for any temporary variable within a written function. 
+DugongBlast <- read.csv("Dugong-Alignment-Descriptions.csv")
+ElephantBlast <- read.csv("Elephant-Alignment-Descriptions.csv")
+DolphinBlast <- read.csv("dolphin-Alignment-Descriptions.csv")
+HyraxBlast <- read.csv("hyrax-Alignment-Descriptions.csv")
+ManateesBlast <- read.csv("Manatees-Alignment-Descriptions.csv")
+SeaCowBlast <- read.csv("seacow-Alignment-Descriptions.csv")
+whaleBlast <- read.csv("whale-Alignment-Descriptions.csv")
+```
+
+
+```{r}
+#I will only display the top 6 similarities to compare the result by using percent identity to make the visualization easier. 
+DugongBlast[1:6,2:7]
+ElephantBlast[1:6,2:7]
+DolphinBlast[1:6,2:7]
+HyraxBlast[1:6,2:7]
+ManateesBlast[1:6,2:7]
+SeaCowBlast[1:6,2:7]
+```
+
+Analysis: 
+As we can see from the phylogenetic tree, Dugong (Dugong dugon) is most closely related to Trichechus manatus (manatees) as expected because they both are mammals of the order Sirenia in current days, but Dugong is more closely related to Hyrax (Procavia capensis) than Stellar Seacow (Hydrodamalis gigas) and African elephant (Loxodonta africana) but African elephant and Stellar sea cow fall under same taxa. Marine mammals whale and dolphin are under the same taxa hence it proved the accuracy of the phylogenetic tree.  
+
+Futhermore, using the percent identity result from blast search as it describes how similar the query sequence is to the target sequence, Dugong has the most similarities to stellar seacow around 88%, and 85% to manatees. However blast search result do not show any similarites of dugong or manatees to African elephant, hydrax, whale and dolphine. 
+
+Overall dugong closest relatives are hyrax in phylogenetic tree and stellar cow in blast search, hence it proved that my hypothesis wrong that African elephant is not the most closely related to dugong. But the result in phylogenetic tree and blast search do not match because hyrax is not the top 100 species that have high similarities to dugong in blast search, however it could be because the DNA sequences that I found have short query sequences and low complexity, hence by default blast search will not show when the E value threshold above 10 or will not align regions that have low complexity. 
+
+`
+
+
+
