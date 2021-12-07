@@ -3,7 +3,7 @@ title: "Project 2D"
 output: html_document
 ---
 
-Introduction (40 points)
+Introduction
 
 Scientific question:
 Dugong is the only herbivours mammal that become completely aquatic. Their fossil could traced them back to 50 millions years. Dugong had become endangered species because of global warming and human hunting for their meats and oils. Dugong is most closely related to stellar sea cow that are extinct hence I am curious which species are dugong closely related to nowadays due to dugong looks similar to manatees except the shape of the tail, but it also has a tail shape like dolphin, and it is also evolved from elephants. As measured by the mitochondrial genome, are dugongs more closely related to other marine mammals such as dolphins or Beluga whale, or their evolutionary ancestor elephants, or a outgroup such as hyrax? Manatees is used as a control group because it is known as the most closely related species to dugong nowadays. 
